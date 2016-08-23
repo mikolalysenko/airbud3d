@@ -7,15 +7,8 @@ const wsock = require('websocket-stream')
 const to2 = require('to2')
 const lenpre = require('length-prefixed-stream')
 
-wsock('ws://192.168.1.144:9000')
-  .pipe(lenpre.decode())
-  .pipe(to2(function (buf, enc, next) {
-    console.log(buf.length)
-    next()
-  }))
-
-const WIDTH = 256
-const HEIGHT = 256
+const WIDTH = 640
+const HEIGHT = 480
 
 const rgbTexture = regl.texture({
   shape: [WIDTH, HEIGHT, 3],
@@ -27,8 +20,18 @@ const depthTexture = regl.texture({
   shape: [WIDTH, HEIGHT, 1],
   format: 'luminance',
   type: 'float',
-  data: Array(WIDTH * HEIGHT).fill(0).map(() => Math.random())
+  data: Array(WIDTH * HEIGHT).fill(0)
 })
+
+wsock('ws://192.168.1.144:9000')
+  .pipe(lenpre.decode())
+  .pipe(to2(function (buf, enc, next) {
+    if (buf[3] === 0) {
+      rgbTexture.subimage(buf.subarray(4))
+    } else {
+    }
+    next()
+  }))
 
 const uvData = []
 for (let i = 0; i < HEIGHT; ++i) {
@@ -47,13 +50,11 @@ const drawParticles = regl({
   varying vec2 fuv;
 
   vec3 warp (vec3 p) {
-    return vec3(
-      p.xy,
-      p.z + cos(length(p.xy) + tick));
+    return p;
   }
 
   void main () {
-    vec3 position = warp(vec3(2.0 * uv - 1.0, texture2D(depth, uv).r));
+    vec3 position = warp(vec3(2.0 * vec2(uv.x, 1.0 - uv.y) - 1.0, texture2D(depth, uv).r));
     fuv = uv;
     gl_PointSize = 8.0;
     gl_Position = projection * view * vec4(position, 1);
