@@ -3,6 +3,16 @@ const regl = require('regl')({
 })
 const stereo = require('regl-stereo')({regl})
 const mat4 = require('gl-mat4')
+const wsock = require('websocket-stream')
+const to2 = require('to2')
+const lenpre = require('length-prefixed-stream')
+
+wsock('ws://192.168.1.144:9000')
+  .pipe(lenpre.decode())
+  .pipe(to2(function (buf, enc, next) {
+    console.log(buf.length)
+    next()
+  }))
 
 const WIDTH = 256
 const HEIGHT = 256
