@@ -5,8 +5,11 @@
   "main": "index.js",
   "dependencies": {
     "gl-mat4": "^1.1.4",
+    "length-prefixed-stream": "^1.5.0",
     "regl": "^1.1.0",
-    "regl-stereo": "^1.0.0"
+    "regl-stereo": "^1.0.0",
+    "to2": "^1.0.0",
+    "websocket-stream": "^3.2.1"
   },
   "devDependencies": {},
   "scripts": {
