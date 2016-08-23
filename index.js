@@ -33,11 +33,19 @@ const drawParticles = regl({
   attribute vec2 uv;
   uniform sampler2D depth;
   uniform mat4 projection, view;
+  uniform float tick;
   varying vec2 fuv;
+
+  vec3 warp (vec3 p) {
+    return vec3(
+      p.xy,
+      p.z + cos(length(p.xy) + tick));
+  }
+
   void main () {
-    vec3 position = vec3(2.0 * uv - 1.0, texture2D(depth, uv).r);
+    vec3 position = warp(vec3(2.0 * uv - 1.0, texture2D(depth, uv).r));
     fuv = uv;
-    gl_PointSize = 2.0;
+    gl_PointSize = 8.0;
     gl_Position = projection * view * vec4(position, 1);
   }
   `,
@@ -62,7 +70,8 @@ const drawParticles = regl({
       mat4.create(),
       [0, 0, -2],
       [0, 0, 0],
-      [0, 1, 0])
+      [0, 1, 0]),
+    tick: ({tick}) => tick / 60.0
   },
 
   count: WIDTH * HEIGHT,
@@ -76,7 +85,7 @@ regl.frame(() => {
     depth: 1
   })
   stereo({
-    separation: 0.1,
+    separation: 0.25,
     fov: Math.PI / 4.0,
     zNear: 1,
     zFar: 100
